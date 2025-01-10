@@ -1,77 +1,98 @@
 
-# 🤖 ChatGPT Windows Automation Script
+# ✂️📋 ClipGPT
 
-This AutoIt script allows you to quickly interact with ChatGPT by selecting text from any application and sending it to ChatGPT. The script runs in the background, pastes the selected text into ChatGPT, copies the response, and pastes it back into the clipboard for easy access.
+ClipGPT is a Python-based tool that allows you to interact with **OpenAI GPT-4o-mini** directly using your clipboard. Whether it's text or images, you can copy content and send it to GPT with a simple shortcut. Responses are also logged for future reference.
 
-🔗 **GitHub Repository:** [ungaul/chatgpt-windows](https://github.com/ungaul/chatgpt-windows)
+---
 
-## 🚀 Features
+## ✨ Features
+- 🚀 **Send text or images** directly from your clipboard to OpenAI's GPT-4o-mini.
+- 📂 **Log all interactions** (text and images) in a local file for easy access.
+- 🖼️ **Supports text and image inputs** (Base64 encoded for images).
+- 🛠️ **Lightweight and efficient**: Uses simple keyboard shortcuts for seamless interaction.
 
-- **Select and Send**: Select text in any window, press `Ctrl + Shift + G`, and the text will be sent to ChatGPT.
-- **Clipboard Response**: The response from ChatGPT is automatically copied to your clipboard for easy access.
-- **Hotkey to Close**: You can close the script and the ChatGPT window anytime by pressing `Ctrl + Shift + H`.
-- **Runs in Background**: The ChatGPT window is moved off-screen, so the process runs invisibly without disturbing your workspace.
+---
 
-## 🛠 Installation
+## 📋 Prerequisites
 
-1. **Install AutoIt**:
-   - Download and install [AutoIt](https://www.autoitscript.com/site/autoit/downloads/). This tool is necessary to run the script.
+1. Install **Python 3.8+**.
+2. Install the required Python packages:
+   ```bash
+   pip install openai pyperclip keyboard python-dotenv pillow
+   ```
+3. Create a file named `.env` in the project directory and configure your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+   You can find your API key in your OpenAI account settings: [OpenAI API Keys](https://platform.openai.com/settings/).
 
-2. **Download the Script**:
-   - Download or clone this repository from GitHub:
-     ```bash
-     git clone https://github.com/ungaul/chatgpt-windows.git
-     ```
-   - Save the script as `chatgpt_windows.au3`.
+---
 
-3. **Run the Script**:
-   - To run the script, simply double-click the `.au3` file, or use the AutoIt editor to launch it.
+## 🛠️ Installation
 
-## 💻 How to Use
+1. Clone or download this repository.
+2. Navigate to the project directory:
+   ```bash
+   cd ClipGPT
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Add your OpenAI API key to the `.env` file as described above.
 
-### ✨ Sending Text to ChatGPT
-1. **Select Text**:
-   - In any window, select the text you'd like to send to ChatGPT.
-   
-2. **Press the Hotkey**:
-   - Press `Ctrl + Shift + G` to trigger the script.
-   
-3. **Wait for the Response**:
-   - The script will send the text to ChatGPT and wait 10 seconds for a response.
+---
 
-4. **Response Copied to Clipboard**:
-   - The response is automatically copied to your clipboard, ready to paste wherever needed. You can access it with `Win + V` to view your clipboard history.
+## 🖥️ Usage
 
-### ❌ Closing the Script
-- Press `Ctrl + Shift + H` to close both the script and the ChatGPT window.
+1. Run the script:
+   ```bash
+   python ai.py
+   ```
+2. **Shortcuts**:
+   - **Copy text or image**: Use `Ctrl + C` as usual to copy content to your clipboard.
+   - **Send to GPT**: Press `Alt + C` to send the current clipboard content (text or image) to GPT.
+   - **Exit the script**: Press `Ctrl + Q`.
 
-## 🔧 How It Works
+3. **Logs**:
+   - All interactions (text and image) are saved in a file called `ChatGPT_History_Log.txt` located in your `Documents` folder.
 
-1. **Opens ChatGPT in a New Window**:
-   - The script opens a new Chrome window with a specific ChatGPT conversation link.
+---
 
-2. **Text Interaction**:
-   - After selecting the text, pressing the hotkey (`Ctrl + Shift + G`) will copy the selected text, paste it into ChatGPT, and send the message.
-   
-3. **Waits for Response**:
-   - After 10 seconds, the script uses ChatGPT's built-in shortcut (`Ctrl + Shift + C`) to copy the response.
+## 📝 Example Workflow
 
-4. **Copies to Clipboard**:
-   - The response from ChatGPT is automatically copied to your clipboard for further use.
+1. Copy **"What is the capital of France?"** to your clipboard with `Ctrl + C`.
+2. Press `Alt + C` to send the question to GPT.
+3. The response **"The capital of France is Paris."** is copied back to your clipboard and logged in `ChatGPT_History_Log.txt`.
 
-5. **Closes Cleanly**:
-   - By pressing `Ctrl + Shift + H`, the ChatGPT window is focused and closed properly, and the script stops running.
+For images:
+1. Copy an image to your clipboard (e.g., using a screenshot tool).
+2. Press `Alt + C` to analyze the image with GPT.
 
-## 📋 Requirements
+---
 
-- **AutoIt**: You must have AutoIt installed to run the script.
-- **Google Chrome**: The script uses Chrome to interact with ChatGPT. Ensure it's installed on your system.
+## 📂 File Structure
 
-## 🔑 Hotkeys
+- **`ai.py`**: Main script file.
+- **`.env`**: Contains your API key.
+- **`ChatGPT_History_Log.txt`**: Logs all interactions (created in the `Documents` folder).
 
-- **`Ctrl + Shift + G`**: Send selected text to ChatGPT.
-- **`Ctrl + Shift + H`**: Close the script and the ChatGPT window.
+---
 
-## 📝 License
+## ⚠️ Notes
 
-This project is open-source and available under the [MIT License](LICENSE).
+- Ensure that your clipboard content is either text or an image; unsupported formats may cause errors.
+- The API token should remain private. Do not share your `.env` file.
+- Logs are stored locally; ensure you manage them securely if sensitive information is involved.
+
+---
+
+## 🤝 Contributing
+
+Feel free to open issues or submit pull requests for improvements or bug fixes!
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.
