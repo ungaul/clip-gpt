@@ -45,10 +45,16 @@ ClipGPT is a Python-based tool that allows you to interact with **OpenAI GPT-4o-
 
 ## 🖥️ Usage
 
-1. Run the script:
-   ```bash
-   python ai.py
-   ```
+1. **Run the script:**
+   - To run the file without showing a terminal window, use:
+     ```bash
+     pythonw clip-gpt.py
+     ```
+     Or provide the full path to the Python executable:
+     ```bash
+     C:\Users\gaulerie\AppData\Local\Programs\Python\Python312\pythonw.exe [location of file]
+     ```
+
 2. **Shortcuts**:
    - **Copy text or image**: Use `Ctrl + C` as usual to copy content to your clipboard.
    - **Send to GPT**: Press `Alt + C` to send the current clipboard content (text or image) to GPT.
@@ -73,7 +79,7 @@ For images:
 
 ## 📂 File Structure
 
-- **`ai.py`**: Main script file.
+- **`clip-gpt.py`**: Main script file.
 - **`.env`**: Contains your API key.
 - **`ChatGPT_History_Log.txt`**: Logs all interactions (created in the `Documents` folder).
 
