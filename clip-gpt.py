@@ -1,14 +1,14 @@
+import os
 import openai
 import pyperclip
 import keyboard
 import time
-import os
 import base64
 import io
 from PIL import ImageGrab
 from datetime import datetime
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 model = "gpt-4o-mini"
 
 log_file_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ChatGPT_History_Log.txt")
@@ -28,24 +28,21 @@ def send_to_openai(content, is_image=False):
     """Sends the content to GPT-4o-mini and returns the response."""
     try:
         if is_image:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=model,
                 messages=[
                     {
                         "role": "user",
                         "content": [
                             {"type": "text", "text": "Analyze this image and provide concise information."},
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": f"data:image/png;base64,{content}"}
-                            },
+                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{content}"}}
                         ],
                     }
                 ],
                 max_tokens=300,
             )
         else:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=model,
                 messages=[
                     {"role": "system", "content": "Provide concise and clean responses for academic purposes."},
@@ -53,7 +50,7 @@ def send_to_openai(content, is_image=False):
                 ]
             )
         return response.choices[0].message.content
-    except Exception as e:
+    except openai.APIError as e:
         print("API Error:", e)
         return "Error: Could not generate a response."
 
