@@ -39,7 +39,11 @@ ClipGPT is a Python-based tool that allows you to interact with **OpenAI GPT-4o-
    ```bash
    pip install -r requirements.txt
    ```
-4. Add your OpenAI API key to the `.env` file as described above.
+4. Add your OpenAI API key with these paraneters:
+   Name: OPENAI_API_KEY
+   Value: [paste your key]
+   1. The `.env` file as described above if you want to run it through a terminal.
+   2. Environment Variables (eg: Windows->Edit Environment Variables for your account->New)
 
 ---
 
