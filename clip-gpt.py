@@ -9,12 +9,12 @@ from PIL import ImageGrab
 from datetime import datetime
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-model = "gpt-4o-mini"
+model = os.getenv("GPT_MODEL", "gpt-4o-mini")
+prompt = os.getenv("GPT_PROMPT", "")
 
 log_file_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ChatGPT_History_Log.txt")
 
 def log_interaction(input_type, content, response):
-    """Logs the interaction into the log file."""
     with open(log_file_path, "a", encoding="utf-8") as log_file:
         log_file.write(f"{datetime.now()} - {input_type.upper()}\n")
         if input_type == "text":
@@ -25,37 +25,35 @@ def log_interaction(input_type, content, response):
         log_file.write("-" * 50 + "\n")
 
 def send_to_openai(content, is_image=False):
-    """Sends the content to GPT-4o-mini and returns the response."""
     try:
         if is_image:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Analyze this image and provide concise information."},
-                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{content}"}}
-                        ],
-                    }
-                ],
-                max_tokens=300,
-            )
+            messages = [
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Analyze this image and provide concise information."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{content}"}}
+                ]}
+            ]
         else:
-            response = client.chat.completions.create(
-                model=model,
-                messages=[
-                    {"role": "system", "content": "Provide concise and clean responses for academic purposes."},
-                    {"role": "user", "content": content}
-                ]
-            )
+            messages = []
+            if prompt.strip():
+                messages.append({"role": "system", "content": prompt})
+            messages.append({"role": "user", "content": content})
+
+        kwargs = {}
+        if is_image:
+            kwargs["max_tokens"] = 300
+
+        response = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            **kwargs
+        )
         return response.choices[0].message.content
     except openai.APIError as e:
         print("API Error:", e)
         return "Error: Could not generate a response."
 
 def encode_image_from_clipboard():
-    """Encodes the image in the clipboard as a Base64 string."""
     try:
         image = ImageGrab.grabclipboard()
         if image:
