@@ -2,12 +2,12 @@ name: Build and Release clip-gpt
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - clip-gpt.pyw
-
+    branches: [main]
+    paths: [clip-gpt.pyw]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -29,7 +29,6 @@ jobs:
         run: pyinstaller --onefile --windowed --icon=assets/ChatGPT.ico clip-gpt.pyw
 
       - name: Create release
-        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: clip-gpt-${{ github.run_number }}
