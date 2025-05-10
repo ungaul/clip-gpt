@@ -1,0 +1,48 @@
+name: Build and Release clip-gpt
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - clip-gpt.pyw
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pyinstaller
+        run: pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller --onefile --windowed --icon=assets/ChatGPT.ico clip-gpt.pyw
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: clip-gpt-${{ github.run_number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload binary
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: clip-gpt-${{ github.run_number }}
+          files: dist/clip-gpt.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up build files
+        run: |
+          Remove-Item build -Recurse -Force
+          Remove-Item clip-gpt.spec -Force

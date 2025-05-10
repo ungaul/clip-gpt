@@ -9,7 +9,7 @@ from PIL import ImageGrab
 from datetime import datetime
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-model = os.getenv("GPT_MODEL", "gpt-4o-mini")
+model = os.getenv("GPT_MODEL", "o4-mini")
 prompt = os.getenv("GPT_PROMPT", "")
 
 log_file_path = os.path.join(os.environ["USERPROFILE"], "Documents", "ChatGPT_History_Log.txt")
