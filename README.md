@@ -105,4 +105,5 @@ Feel free to open issues or submit pull requests for improvements or bug fixes!
 
 ## 📜 License
 
-This project is licensed under the MIT License.
+Distributed under the [LICENSE](LICENSE.md).
+Feel free to open an issue or pull request if you have any questions, requests, or want to contribute.
