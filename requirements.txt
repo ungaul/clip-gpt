@@ -6,3 +6,4 @@ pillow
 python-docx
 pandas
 openpyxl
+requests
