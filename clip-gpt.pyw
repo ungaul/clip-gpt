@@ -70,7 +70,7 @@ def upload_pdf(path):
         return None
 
 def is_supported_file(path):
-    supported = [".pdf", ".docx", ".xlsx", ".xls", ".txt", ".csv"]
+    supported = [".pdf", ".docx", ".xlsx", ".xls", ".txt", ".csv", ".jpg", ".jpeg", ".png"]
     return os.path.isfile(path) and os.path.splitext(path)[1].lower() in supported
 
 def upload_clipboard_image():
@@ -96,6 +96,7 @@ def upload_clipboard_image():
 def send_to_openai(user_input, structured=False):
     global chat_history, active_context_reference, previous_model_reply
     messages = []
+    kwargs = {}
 
     if structured and active_context_reference:
         ctx = active_context_reference
@@ -109,7 +110,7 @@ def send_to_openai(user_input, structured=False):
                         f"User input: {user_input.strip()}"}
                 ]
             }]
-            kwargs = {"max_completion_tokens": 300}
+            kwargs = {"max_tokens": 3000}
 
         elif ctx["type"] == "image":
             messages = [{
@@ -127,11 +128,8 @@ def send_to_openai(user_input, structured=False):
                 context_text += f'Previous reply: "{previous_model_reply.strip()}"\n'
             context_text += f"User input: {user_input.strip()}"
             messages = [{"role": "user", "content": context_text}]
-            kwargs = {}
-
     else:
         messages = [{"role": "user", "content": user_input.strip()}]
-        kwargs = {}
 
     response = client.chat.completions.create(
         model=model,
@@ -150,18 +148,84 @@ def send_to_openai(user_input, structured=False):
 def handle_clipboard():
     global active_context_reference, previous_model_reply
     time.sleep(0.2)
-    text = pyperclip.paste().strip().strip('"')
-    image_url = upload_clipboard_image()
 
-    if image_url:
-        print("Alt+C detected. Sending image to GPT...")
-        active_context_reference = {"type": "image", "url": image_url}
-        previous_model_reply = None
-        response, used_model, usage = send_to_openai("", structured=True)
-        pyperclip.copy(response)
-        log_interaction("image", image_url, response, used_model, usage)
-        print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
-        return
+    grabbed = ImageGrab.grabclipboard()
+    selected_file = None
+
+    if isinstance(grabbed, list) and grabbed:
+        for item in grabbed:
+            if os.path.isfile(item) and is_supported_file(item):
+                selected_file = item
+                break
+
+        if selected_file:
+            ext = os.path.splitext(selected_file)[1].lower()
+            filename = os.path.basename(selected_file)
+            print(f"Detected file: {selected_file}")
+
+            if ext in [".jpg", ".jpeg", ".png"]:
+                with open(selected_file, "rb") as f:
+                    files = {'file': (filename, f, 'image/jpeg' if ext in [".jpg", ".jpeg"] else 'image/png')}
+                    headers = {"User-Agent": "curl/7.64.1"}
+                    r = requests.post("https://0x0.st", files=files, headers=headers)
+                    if r.ok:
+                        image_url = r.text.strip()
+                        print("Detected image file. Sending image to GPT...")
+                        active_context_reference = {"type": "image", "url": image_url}
+                        previous_model_reply = None
+                        response, used_model, usage = send_to_openai("", structured=True)
+                        pyperclip.copy(response)
+                        log_interaction("image", image_url, response, used_model, usage)
+                        print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
+                    else:
+                        print("Image upload failed.")
+                return
+
+            if ext == ".pdf":
+                file_id = upload_pdf(selected_file)
+                if file_id:
+                    active_context_reference = {"type": "pdf", "file_id": file_id, "filename": filename}
+                    previous_model_reply = None
+                    response, used_model, usage = send_to_openai("Please analyze this PDF.", structured=True)
+                    pyperclip.copy(response)
+                    log_interaction("document", selected_file, response, used_model, usage)
+                    print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
+                else:
+                    print("PDF upload failed.")
+            else:
+                content = extract_file_content(selected_file)
+                if content:
+                    active_context_reference = {"type": "text", "content": content, "filename": filename}
+                    previous_model_reply = None
+                    response, used_model, usage = send_to_openai("Please analyze this document.")
+                    pyperclip.copy(response)
+                    log_interaction("document", selected_file, response, used_model, usage)
+                    print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
+                else:
+                    print("Failed to extract text.")
+            return
+
+    if isinstance(grabbed, Image.Image):
+        image = grabbed.convert("RGB")
+        image.thumbnail((512, 512))
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality=80)
+        buffer.seek(0)
+        files = {'file': ('clip.jpg', buffer, 'image/jpeg')}
+        headers = {"User-Agent": "curl/7.64.1"}
+        r = requests.post("https://0x0.st", files=files, headers=headers)
+        if r.ok:
+            image_url = r.text.strip()
+            print("Alt+C detected. Sending image to GPT...")
+            active_context_reference = {"type": "image", "url": image_url}
+            previous_model_reply = None
+            response, used_model, usage = send_to_openai("", structured=True)
+            pyperclip.copy(response)
+            log_interaction("image", image_url, response, used_model, usage)
+            print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
+            return
+
+    text = pyperclip.paste().strip().strip('"')
 
     if is_supported_file(text):
         ext = os.path.splitext(text)[1].lower()
@@ -200,12 +264,12 @@ def handle_clipboard():
         print(f"Response copied to clipboard. Model: {model_used} | Tokens: {usage}")
         return
 
-    if text:
-        print("Alt+C detected. Sending text to GPT...")
-        response, model_used, usage = send_to_openai(text)
+    if text and active_context_reference and active_context_reference.get("type") != "image":
+        print("Sending follow-up with context...")
+        response, used_model, usage = send_to_openai(text, structured=True)
         pyperclip.copy(response)
-        log_interaction("text", text, response, model_used, usage)
-        print(f"Response copied to clipboard. Model: {model_used} | Tokens: {usage}")
+        log_interaction("text", text, response, used_model, usage)
+        print(f"Response copied to clipboard. Model: {used_model} | Tokens: {usage}")
         return
 
     print("Clipboard is empty or contains no valid data.")
