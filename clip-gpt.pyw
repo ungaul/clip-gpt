@@ -1,4 +1,3 @@
-# Toutes les importations nécessaires
 import os
 import openai
 import pyperclip
